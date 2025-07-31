@@ -15,7 +15,13 @@
                 <p class="admin-subtitle">Round-by-round answers and navigation</p>
                 
                 <div class="admin-controls">
-                    <button id="close-admin" class="btn btn-danger">Close</button>
+                    <div class="config-selection">
+                        <label for="admin-config-select">Theme:</label>
+                        <select id="admin-config-select">
+                            <option value="default">Baby Shower</option>
+                            <option value="wedding">Wedding Shower</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- All Rounds Container -->
@@ -26,6 +32,7 @@
         </div>
     </div>
 
+    <script src="configs.js"></script>
     <script src="admin.js"></script>
 </body>
 </html> 

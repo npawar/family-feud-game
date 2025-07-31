@@ -2,6 +2,9 @@
 
 class AdminCheatSheet {
     constructor() {
+        // Use shared configurations
+        this.availableConfigs = window.GameConfigs || {};
+        
         // Load questions from config
         this.loadConfig();
         
@@ -28,85 +31,12 @@ class AdminCheatSheet {
         }
         
         // Fallback to default config
-        return this.getDefaultConfig();
-    }
-    
-    getDefaultConfig() {
-        return {
-            title: "Baby Shower Family Feud",
-            teamNames: { default1: "Team Forest", default2: "Team Meadow" },
-            questions: [
-            {
-                question: "Name something you'd find in a baby's diaper bag",
-                answers: [
-                    { text: "Diapers", points: 25 },
-                    { text: "Wipes", points: 20 },
-                    { text: "Baby Powder", points: 15 },
-                    { text: "Pacifier", points: 12 },
-                    { text: "Extra Clothes", points: 10 },
-                    { text: "Bottles", points: 8 },
-                    { text: "Toys", points: 6 },
-                    { text: "Blanket", points: 4 }
-                ]
-            },
-            {
-                question: "Name a popular baby food flavor",
-                answers: [
-                    { text: "Apple", points: 22 },
-                    { text: "Banana", points: 18 },
-                    { text: "Sweet Potato", points: 16 },
-                    { text: "Carrot", points: 14 },
-                    { text: "Peach", points: 12 },
-                    { text: "Pear", points: 10 },
-                    { text: "Green Beans", points: 8 },
-                    { text: "Squash", points: 6 }
-                ]
-            },
-            {
-                question: "Name something that helps babies sleep",
-                answers: [
-                    { text: "Lullabies", points: 24 },
-                    { text: "Pacifier", points: 20 },
-                    { text: "Rocking", points: 16 },
-                    { text: "White Noise", points: 14 },
-                    { text: "Swaddling", points: 12 },
-                    { text: "Nursing", points: 10 },
-                    { text: "Stuffed Animal", points: 8 },
-                    { text: "Night Light", points: 6 }
-                ]
-            },
-            {
-                question: "Name a common baby milestone",
-                answers: [
-                    { text: "First Smile", points: 26 },
-                    { text: "Rolling Over", points: 20 },
-                    { text: "Sitting Up", points: 16 },
-                    { text: "Crawling", points: 14 },
-                    { text: "First Words", points: 12 },
-                    { text: "Walking", points: 10 },
-                    { text: "Teething", points: 8 },
-                    { text: "Clapping", points: 6 }
-                ]
-            },
-            {
-                question: "Name something parents worry about with newborns",
-                answers: [
-                    { text: "Sleeping", points: 28 },
-                    { text: "Feeding", points: 22 },
-                    { text: "Crying", points: 18 },
-                    { text: "Temperature", points: 14 },
-                    { text: "Diaper Rash", points: 12 },
-                    { text: "Weight Gain", points: 10 },
-                    { text: "Development", points: 8 },
-                    { text: "Safety", points: 6 }
-                ]
-            }
-        ];
-        }
+        return this.availableConfigs['default'];
     }
     
     initializeAdmin() {
         this.bindEvents();
+        this.updateDropdownSelection();
         this.showAllRounds();
         
         // Update page title
@@ -114,14 +44,29 @@ class AdminCheatSheet {
     }
     
     bindEvents() {
-        document.getElementById('close-admin').addEventListener('click', () => {
-            window.close();
+        document.getElementById('admin-config-select').addEventListener('change', (e) => {
+            this.switchConfig(e.target.value);
         });
     }
     
     showAllRounds() {
+        console.log('showAllRounds called');
+        console.log('this.questions:', this.questions);
+        console.log('this.configTitle:', this.configTitle);
+        
         const allRoundsContainer = document.getElementById('all-rounds-container');
+        if (!allRoundsContainer) {
+            console.error('all-rounds-container not found!');
+            return;
+        }
+        
         allRoundsContainer.innerHTML = '';
+        
+        if (!this.questions || this.questions.length === 0) {
+            console.error('No questions found!');
+            allRoundsContainer.innerHTML = '<p>No questions loaded!</p>';
+            return;
+        }
         
         this.questions.forEach((question, roundIndex) => {
             const roundSection = document.createElement('div');
@@ -145,9 +90,62 @@ class AdminCheatSheet {
             allRoundsContainer.appendChild(roundSection);
         });
     }
+    
+    switchConfig(configName) {
+        console.log('Switching to config:', configName);
+        
+        // Load the new config
+        if (this.availableConfigs[configName]) {
+            const selectedConfig = this.availableConfigs[configName];
+            this.questions = selectedConfig.questions;
+            this.configTitle = selectedConfig.title;
+            
+            // Update the display
+            this.showAllRounds();
+            document.title = `Admin Cheat Sheet - ${this.configTitle}`;
+            
+            console.log('Config switched to:', this.configTitle);
+        } else {
+            console.error('Config not found:', configName);
+        }
+    }
+    
+    updateDropdownSelection() {
+        // Try to detect which config is being used in the main window
+        let selectedConfigKey = 'default';
+        
+        try {
+            const mainWindow = window.opener;
+            if (mainWindow && mainWindow.game && mainWindow.game.config) {
+                // Find which config matches the main window's config
+                for (const [key, config] of Object.entries(this.availableConfigs)) {
+                    if (config.title === mainWindow.game.config.title) {
+                        selectedConfigKey = key;
+                        break;
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('Cannot detect main window config, using default');
+        }
+        
+        // Set the dropdown value
+        const dropdown = document.getElementById('admin-config-select');
+        if (dropdown) {
+            dropdown.value = selectedConfigKey;
+        }
+        
+        console.log('Dropdown set to:', selectedConfigKey);
+    }
 }
 
 // Initialize the admin when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new AdminCheatSheet();
-}); 
+    console.log('DOM loaded, initializing AdminCheatSheet...');
+    try {
+        new AdminCheatSheet();
+        console.log('AdminCheatSheet initialized successfully');
+    } catch (error) {
+        console.error('Error initializing AdminCheatSheet:', error);
+    }
+});
