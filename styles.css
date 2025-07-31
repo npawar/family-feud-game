@@ -722,11 +722,12 @@ body::after {
         min-height: auto;
     }
     
-    /* Keep 4x2 grid for admin page on mobile */
+    /* Keep 4x2 grid for admin page on mobile - force override */
     .admin-screen .answers-grid,
-    #show-all-container .answers-grid {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(4, 1fr);
+    #show-all-container .answers-grid,
+    .admin-screen .round-section .answers-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-rows: repeat(4, 1fr) !important;
         min-height: 300px;
         gap: 10px;
     }
