@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Shower Family Feud</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen active">
+            <div class="welcome-content">
+                <h1 class="title">Baby Shower Family Feud</h1>
+                <p class="subtitle">Test your baby knowledge with friends and family!</p>
+                <div class="config-selection">
+                    <div class="config-input">
+                        <label for="config-select">Game Theme:</label>
+                        <select id="config-select">
+                            <option value="default">Baby Shower</option>
+                            <option value="wedding">Wedding Shower</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="teams-setup">
+                    <div class="team-input">
+                        <label for="team1-name">Team 1 Name:</label>
+                        <input type="text" id="team1-name" placeholder="e.g., Team Forest" value="">
+                    </div>
+                    <div class="team-input">
+                        <label for="team2-name">Team 2 Name:</label>
+                        <input type="text" id="team2-name" placeholder="e.g., Team Meadow" value="">
+                    </div>
+                </div>
+                <button id="start-game" class="btn btn-primary">Start Game</button>
+                <button id="show-cheat-sheet" class="btn btn-secondary">Admin Cheat Sheet</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="scores">
+                    <div class="team-score" id="team1-score">
+                        <h3 id="team1-display">Team Forest</h3>
+                        <span id="team1-points">0</span>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="team-score" id="team2-score">
+                        <h3 id="team2-display">Team Meadow</h3>
+                        <span id="team2-points">0</span>
+                    </div>
+                </div>
+                <div class="round-info">
+                    <h2>Round <span id="current-round">1</span> of <span id="total-rounds">5</span></h2>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <h2 id="current-question">What's the most popular baby name?</h2>
+            </div>
+
+            <!-- Answer Input Section -->
+            <div class="answer-input-section">
+                <div class="input-container">
+                    <input type="text" id="answer-input" placeholder="Type your answer here..." autocomplete="off">
+                    <button id="submit-answer" class="btn btn-primary">Submit Answer</button>
+                </div>
+                <div class="current-team-display">
+                    <span id="current-team-indicator">Team Forest's Turn</span>
+                </div>
+                <div class="feedback-message" id="feedback-message"></div>
+            </div>
+
+            <div class="answers-grid" id="answers-grid">
+                <!-- Answers will be populated here -->
+            </div>
+
+            <div class="game-controls">
+                <button id="undo" class="btn btn-secondary">↶ Undo</button>
+                <button id="reveal-all" class="btn btn-warning">Reveal All</button>
+                <button id="next-round" class="btn btn-primary" style="display: none;">Next Round</button>
+                <button id="end-game" class="btn btn-danger" style="display: none;">End Game</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <div class="results-content">
+                <h1>🎉 Game Over! 🎉</h1>
+                <div class="final-scores">
+                    <div class="winner-announcement" id="winner-announcement">
+                        <!-- Winner will be announced here -->
+                    </div>
+                    <div class="final-score-display">
+                        <div class="final-team-score">
+                            <h3 id="final-team1">Team Forest</h3>
+                            <span id="final-team1-score">0</span>
+                        </div>
+                        <div class="final-team-score">
+                            <h3 id="final-team2">Team Meadow</h3>
+                            <span id="final-team2-score">0</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="play-again" class="btn btn-primary">Play Again</button>
+                <button id="back-to-welcome" class="btn btn-secondary">Back to Welcome</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

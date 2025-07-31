@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Cheat Sheet - Baby Shower Family Feud</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="admin-screen">
+            <div class="admin-content">
+                <h1>🔍 Admin Cheat Sheet</h1>
+                <p class="admin-subtitle">Round-by-round answers and navigation</p>
+                
+                <div class="admin-controls">
+                    <button id="prev-round" class="btn btn-secondary">← Previous Round</button>
+                    <button id="next-round" class="btn btn-secondary">Next Round →</button>
+                    <button id="show-all" class="btn btn-primary">Show All Rounds</button>
+                    <button id="close-admin" class="btn btn-danger">Close</button>
+                </div>
+
+                <div class="round-navigation">
+                    <span id="current-round-display">Round 1 of 5</span>
+                </div>
+
+                <div class="question-section">
+                    <h2 id="current-question">What's the most popular baby name?</h2>
+                </div>
+
+                <div class="answers-grid" id="answers-grid">
+                    <!-- Answers will be populated here -->
+                </div>
+
+                <!-- Show All Mode Container -->
+                <div id="show-all-container" style="display: none;">
+                    <!-- All rounds will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html> 
