@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Feud - Player View</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        .player-join {
+            max-width: 400px;
+            margin: 2rem auto;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .player-join h1 {
+            color: #2F4F2F;
+            margin-bottom: 1rem;
+        }
+        
+        .join-form {
+            margin: 2rem 0;
+        }
+        
+        .join-form input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #8FBC8F;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .status-message {
+            margin: 1rem 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .status-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef5350;
+        }
+        
+        .status-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #66bb6a;
+        }
+        
+        .status-waiting {
+            background-color: #fff3e0;
+            color: #ef6c00;
+            border: 1px solid #ffb74d;
+        }
+        
+        .player-game-view {
+            display: none;
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .connected {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .game-header {
+            margin-bottom: 1rem;
+        }
+        
+        .current-team-indicator {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .team1-turn {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .team2-turn {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Connection Status -->
+        <div id="connection-status" class="connection-status disconnected">
+            Disconnected
+        </div>
+        
+        <!-- Join Game Screen -->
+        <div id="join-screen" class="screen active">
+            <div class="player-join">
+                <h1>🎮 Join Game</h1>
+                <p>Enter the game code shared by your host</p>
+                
+                <div class="join-form">
+                    <input type="text" id="game-code-input" placeholder="GAME CODE" maxlength="6">
+                    <button id="join-game" class="btn btn-primary">Join Game</button>
+                </div>
+                
+                <div id="status-message" class="status-message" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Player Game View -->
+        <div id="player-game-screen" class="screen player-game-view">
+            <div class="game-header">
+                <div class="scores">
+                    <div class="team-score" id="player-team1-score">
+                        <h3 id="player-team1-display">Team Forest</h3>
+                        <span id="player-team1-points">0</span>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="team-score" id="player-team2-score">
+                        <h3 id="player-team2-display">Team Meadow</h3>
+                        <span id="player-team2-points">0</span>
+                    </div>
+                </div>
+                
+                <div id="current-team-indicator" class="current-team-indicator">
+                    Waiting for game to start...
+                </div>
+            </div>
+            
+            <div class="game-content">
+                <div class="question-section">
+                    <h2 id="player-question">Waiting for host to start the game...</h2>
+                    <div class="round-info">
+                        <span>Round <span id="player-round-number">1</span> of 5</span>
+                    </div>
+                </div>
+                
+                <div class="answers-grid" id="player-answers-grid">
+                    <!-- Answers will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Waiting Screen -->
+        <div id="waiting-screen" class="screen" style="display: none;">
+            <div class="player-join">
+                <h2>🎉 Game Joined!</h2>
+                <p>Waiting for the host to start the game...</p>
+                <div class="status-message status-waiting">
+                    Connected to game. The host will start the game soon.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PlayerGameClient {
+            constructor() {
+                this.socket = null;
+                this.gameCode = null;
+                this.gameState = null;
+                this.isConnected = false;
+                
+                this.initializeSocket();
+                this.bindEvents();
+            }
+            
+            initializeSocket() {
+                this.socket = io();
+                
+                this.socket.on('connect', () => {
+                    this.isConnected = true;
+                    this.updateConnectionStatus();
+                    console.log('Connected to server');
+                });
+                
+                this.socket.on('disconnect', () => {
+                    this.isConnected = false;
+                    this.updateConnectionStatus();
+                    this.showStatus('Connection lost. Trying to reconnect...', 'error');
+                });
+                
+                this.socket.on('gameStarted', (gameState) => {
+                    this.gameState = gameState;
+                    this.showGameScreen();
+                    this.updateGameDisplay();
+                });
+                
+                this.socket.on('gameStateUpdated', (gameState) => {
+                    this.gameState = gameState;
+                    this.updateGameDisplay();
+                });
+                
+                this.socket.on('answerRevealed', (answerData) => {
+                    this.revealAnswer(answerData);
+                });
+                
+                this.socket.on('scoreUpdated', (gameState) => {
+                    this.gameState = gameState;
+                    this.updateScores();
+                    this.updateCurrentTeam();
+                });
+                
+                this.socket.on('roundChanged', (gameState) => {
+                    this.gameState = gameState;
+                    this.updateGameDisplay();
+                });
+                
+                this.socket.on('adminDisconnected', () => {
+                    this.showStatus('Host disconnected. Game may end soon.', 'error');
+                });
+                
+                this.socket.on('undoActionReceived', (undoData) => {
+                    this.handleUndoAction(undoData);
+                });
+            }
+            
+            bindEvents() {
+                document.getElementById('join-game').addEventListener('click', () => {
+                    this.joinGame();
+                });
+                
+                document.getElementById('game-code-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.joinGame();
+                    }
+                });
+                
+                // Auto-uppercase game code input
+                document.getElementById('game-code-input').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                });
+            }
+            
+            joinGame() {
+                const gameCodeInput = document.getElementById('game-code-input');
+                const gameCode = gameCodeInput.value.trim().toUpperCase();
+                
+                if (!gameCode || gameCode.length !== 6) {
+                    this.showStatus('Please enter a valid 6-character game code', 'error');
+                    return;
+                }
+                
+                this.showStatus('Joining game...', 'waiting');
+                
+                this.socket.emit('joinGame', { gameCode }, (response) => {
+                    if (response.success) {
+                        this.gameCode = gameCode;
+                        this.gameState = response.gameState;
+                        
+                        if (this.gameState.isGameStarted) {
+                            this.showGameScreen();
+                            this.updateGameDisplay();
+                        } else {
+                            this.showWaitingScreen();
+                        }
+                    } else {
+                        this.showStatus(response.error || 'Failed to join game', 'error');
+                    }
+                });
+            }
+            
+            showStatus(message, type) {
+                const statusEl = document.getElementById('status-message');
+                statusEl.textContent = message;
+                statusEl.className = `status-message status-${type}`;
+                statusEl.style.display = 'block';
+            }
+            
+            showWaitingScreen() {
+                document.getElementById('join-screen').classList.remove('active');
+                document.getElementById('waiting-screen').style.display = 'block';
+            }
+            
+            showGameScreen() {
+                document.getElementById('join-screen').classList.remove('active');
+                document.getElementById('waiting-screen').style.display = 'none';
+                document.getElementById('player-game-screen').style.display = 'block';
+                document.getElementById('player-game-screen').classList.add('active');
+            }
+            
+            updateConnectionStatus() {
+                const statusEl = document.getElementById('connection-status');
+                if (this.isConnected) {
+                    statusEl.textContent = 'Connected';
+                    statusEl.className = 'connection-status connected';
+                } else {
+                    statusEl.textContent = 'Disconnected';
+                    statusEl.className = 'connection-status disconnected';
+                }
+            }
+            
+            updateGameDisplay() {
+                if (!this.gameState) return;
+                
+                // Update team names and scores
+                document.getElementById('player-team1-display').textContent = this.gameState.team1Name;
+                document.getElementById('player-team2-display').textContent = this.gameState.team2Name;
+                this.updateScores();
+                this.updateCurrentTeam();
+                
+                // Update round and question
+                document.getElementById('player-round-number').textContent = this.gameState.currentRound + 1;
+                
+                if (this.gameState.questions && this.gameState.questions[this.gameState.currentRound]) {
+                    const currentQuestion = this.gameState.questions[this.gameState.currentRound];
+                    document.getElementById('player-question').textContent = currentQuestion.question;
+                    this.renderAnswers(currentQuestion.answers);
+                }
+            }
+            
+            updateScores() {
+                if (!this.gameState) return;
+                document.getElementById('player-team1-points').textContent = this.gameState.team1Score;
+                document.getElementById('player-team2-points').textContent = this.gameState.team2Score;
+            }
+            
+            updateCurrentTeam() {
+                if (!this.gameState) return;
+                
+                const indicator = document.getElementById('current-team-indicator');
+                const teamName = this.gameState.currentTeam === 1 ? this.gameState.team1Name : this.gameState.team2Name;
+                
+                indicator.textContent = `${teamName}'s Turn`;
+                indicator.className = `current-team-indicator ${this.gameState.currentTeam === 1 ? 'team1-turn' : 'team2-turn'}`;
+            }
+            
+            renderAnswers(answers) {
+                const grid = document.getElementById('player-answers-grid');
+                grid.innerHTML = '';
+                
+                answers.forEach((answer, index) => {
+                    const answerCard = document.createElement('div');
+                    answerCard.className = 'answer-card';
+                    answerCard.innerHTML = `
+                        <div class="answer-number">${index + 1}</div>
+                        <div class="answer-content">
+                            <div class="answer-text hidden">?</div>
+                            <div class="answer-points hidden">?</div>
+                        </div>
+                    `;
+                    grid.appendChild(answerCard);
+                });
+            }
+            
+            revealAnswer(answerData) {
+                const answerCards = document.querySelectorAll('.answer-card');
+                const card = answerCards[answerData.index];
+                
+                if (card) {
+                    const textEl = card.querySelector('.answer-text');
+                    const pointsEl = card.querySelector('.answer-points');
+                    
+                    textEl.textContent = answerData.text;
+                    pointsEl.textContent = answerData.points;
+                    
+                    textEl.classList.remove('hidden');
+                    pointsEl.classList.remove('hidden');
+                    card.classList.add('revealed');
+                }
+                
+                this.updateScores();
+            }
+            
+            handleUndoAction(undoData) {
+                // Update the game state
+                this.gameState = undoData.gameState;
+                
+                // Reset all answer cards to unrevealed state
+                const answerCards = document.querySelectorAll('.answer-card');
+                answerCards.forEach((card) => {
+                    const textEl = card.querySelector('.answer-text');
+                    const pointsEl = card.querySelector('.answer-points');
+                    
+                    textEl.textContent = '?';
+                    pointsEl.textContent = '?';
+                    textEl.classList.add('hidden');
+                    pointsEl.classList.add('hidden');
+                    card.classList.remove('revealed');
+                });
+                
+                // Reveal only the answers that should be revealed after undo
+                if (undoData.revealedAnswers && undoData.revealedAnswers.length > 0) {
+                    undoData.revealedAnswers.forEach((answerData) => {
+                        const card = answerCards[answerData.index];
+                        if (card) {
+                            const textEl = card.querySelector('.answer-text');
+                            const pointsEl = card.querySelector('.answer-points');
+                            
+                            textEl.textContent = answerData.text;
+                            pointsEl.textContent = answerData.points;
+                            textEl.classList.remove('hidden');
+                            pointsEl.classList.remove('hidden');
+                            card.classList.add('revealed');
+                        }
+                    });
+                }
+                
+                // Update scores and team indicator
+                this.updateScores();
+                this.updateCurrentTeam();
+            }
+        }
+        
+        // Initialize the player client when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new PlayerGameClient();
+        });
+    </script>
+</body>
+</html>

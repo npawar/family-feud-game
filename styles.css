@@ -30,6 +30,96 @@ body::before {
     z-index: -1;
 }
 
+/* Multiplayer Styles */
+.multiplayer-options {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.multiplayer-options h3 {
+    color: #2F4F2F;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.mode-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.mode-buttons .btn {
+    min-width: 180px;
+}
+
+.game-code-section {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #8FBC8F;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.game-code-section h4 {
+    color: #2F4F2F;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.game-code {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.game-code span {
+    font-family: 'Courier New', monospace;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2F4F2F;
+    background: #f0f8f0;
+    padding: 0.5rem 1rem;
+    border: 2px solid #8FBC8F;
+    border-radius: 8px;
+    letter-spacing: 0.2rem;
+}
+
+.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-width: auto;
+}
+
+.code-instruction {
+    color: #556B2F;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.code-instruction strong {
+    color: #2F4F2F;
+}
+
+@media (max-width: 768px) {
+    .mode-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .game-code {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .game-code span {
+        font-size: 1.5rem;
+    }
+}
+
 /* Baby Animal Background Decorations */
 body::after {
     content: '🐣 🐰 🐻 🐨 🦊 🐸 🐷 🐶';

@@ -6,6 +6,7 @@
     <title>Baby Shower Family Feud</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div class="container">
@@ -34,6 +35,26 @@
                         <input type="text" id="team2-name" placeholder="e.g., Team Meadow" value="">
                     </div>
                 </div>
+                
+                <!-- Multiplayer Options -->
+                <div class="multiplayer-options">
+                    <h3>Game Mode</h3>
+                    <div class="mode-buttons">
+                        <button id="host-game" class="btn btn-primary">Host Multiplayer Game</button>
+                        <button id="single-player" class="btn btn-secondary">Single Player</button>
+                    </div>
+                    
+                    <!-- Game Code Display (hidden by default) -->
+                    <div id="game-code-display" class="game-code-section" style="display: none;">
+                        <h4>Share this code with players:</h4>
+                        <div class="game-code">
+                            <span id="game-code-text"></span>
+                            <button id="copy-code" class="btn btn-small">Copy</button>
+                        </div>
+                        <p class="code-instruction">Players can join at: <strong>your-server-url/player</strong></p>
+                    </div>
+                </div>
+                
                 <button id="start-game" class="btn btn-primary">Start Game</button>
                 <button id="show-cheat-sheet" class="btn btn-secondary">Admin Cheat Sheet</button>
             </div>

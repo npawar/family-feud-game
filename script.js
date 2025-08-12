@@ -9,6 +9,12 @@ class BabyShowerFamilyFeud {
         this.revealedAnswers = 0;
         this.currentTeam = 1; // 1 for team 1, 2 for team 2
         
+        // Multiplayer properties
+        this.socket = null;
+        this.isMultiplayer = false;
+        this.isHost = false;
+        this.gameCode = null;
+        
         // Use shared configurations
         this.availableConfigs = window.GameConfigs || {};
         
@@ -20,6 +26,7 @@ class BabyShowerFamilyFeud {
         this.maxHistorySize = 10;
         
         this.initializeGame();
+        this.initializeMultiplayer();
     }
     
     loadConfig(configName = 'default') {
@@ -69,10 +76,38 @@ class BabyShowerFamilyFeud {
         this.updateDisplay();
     }
     
+    initializeMultiplayer() {
+        // Initialize Socket.IO if available
+        if (typeof io !== 'undefined') {
+            this.socket = io();
+            
+            this.socket.on('connect', () => {
+                console.log('Connected to server');
+            });
+            
+            this.socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+            });
+        }
+    }
+    
     bindEvents() {
         // Config selection event
         document.getElementById('config-select').addEventListener('change', (e) => {
             this.loadConfig(e.target.value);
+        });
+        
+        // Multiplayer events
+        document.getElementById('host-game').addEventListener('click', () => {
+            this.hostMultiplayerGame();
+        });
+        
+        document.getElementById('single-player').addEventListener('click', () => {
+            this.startSinglePlayerMode();
+        });
+        
+        document.getElementById('copy-code').addEventListener('click', () => {
+            this.copyGameCode();
         });
         
         // Welcome screen events
@@ -137,6 +172,17 @@ class BabyShowerFamilyFeud {
         document.getElementById('team2-display').textContent = this.team2Name;
         document.getElementById('final-team1').textContent = this.team1Name;
         document.getElementById('final-team2').textContent = this.team2Name;
+        
+        // Broadcast game start to players if hosting multiplayer
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            const gameData = {
+                team1Name: this.team1Name,
+                team2Name: this.team2Name,
+                config: this.config,
+                questions: this.questions
+            };
+            this.socket.emit('startGame', gameData);
+        }
         
         this.showGameScreen();
         this.loadQuestion();
@@ -365,6 +411,9 @@ class BabyShowerFamilyFeud {
             this.team2Score += points;
         }
         
+        // Broadcast answer reveal to players
+        this.broadcastAnswerReveal(index, answer);
+        
         this.updateDisplay();
         
         // Play chime sound for manual answer reveal
@@ -372,6 +421,9 @@ class BabyShowerFamilyFeud {
         
         // Switch to the other team after revealing an answer
         this.switchTeam();
+        
+        // Broadcast score update
+        this.broadcastScoreUpdate();
         
         // Check if all answers are revealed
         if (this.revealedAnswers >= this.questions[this.currentRound].answers.length) {
@@ -388,6 +440,9 @@ class BabyShowerFamilyFeud {
         answerCard.classList.add('revealed');
         answerCard.querySelector('.answer-text').textContent = answer.text;
         this.revealedAnswers++;
+        
+        // Broadcast answer reveal to players (for reveal all functionality)
+        this.broadcastAnswerReveal(index, answer);
         
         // Check if all answers are revealed
         if (this.revealedAnswers >= this.questions[this.currentRound].answers.length) {
@@ -415,6 +470,9 @@ class BabyShowerFamilyFeud {
         this.loadQuestion();
         this.updateTeamIndicator();
         this.updateUndoButton();
+        
+        // Broadcast round change to players
+        this.broadcastRoundChange();
     }
     
     endGame() {
@@ -591,6 +649,9 @@ class BabyShowerFamilyFeud {
         this.playSound('chime');
         
         this.updateUndoButton();
+        
+        // Broadcast the undo action to players
+        this.broadcastUndoAction(lastState);
     }
     
     // Update undo button state
@@ -669,6 +730,132 @@ class BabyShowerFamilyFeud {
         // Start and stop the sound
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.5);
+    }
+    
+    // Multiplayer Methods
+    hostMultiplayerGame() {
+        if (!this.socket) {
+            alert('Multiplayer not available. Please start the server.');
+            return;
+        }
+        
+        this.socket.emit('createGame', (response) => {
+            if (response.success) {
+                this.isMultiplayer = true;
+                this.isHost = true;
+                this.gameCode = response.gameCode;
+                
+                // Show game code
+                document.getElementById('game-code-text').textContent = response.gameCode;
+                document.getElementById('game-code-display').style.display = 'block';
+                
+                // Update URL display
+                const urlDisplay = document.querySelector('.code-instruction strong');
+                urlDisplay.textContent = `${window.location.origin}/player`;
+                
+                console.log(`Hosting game with code: ${response.gameCode}`);
+            } else {
+                alert('Failed to create game. Please try again.');
+            }
+        });
+    }
+    
+    startSinglePlayerMode() {
+        this.isMultiplayer = false;
+        this.isHost = false;
+        console.log('Starting single player mode');
+    }
+    
+    copyGameCode() {
+        const gameCode = document.getElementById('game-code-text').textContent;
+        navigator.clipboard.writeText(gameCode).then(() => {
+            const button = document.getElementById('copy-code');
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy game code:', err);
+        });
+    }
+    
+    broadcastGameState() {
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            const gameState = {
+                currentRound: this.currentRound,
+                team1Score: this.team1Score,
+                team2Score: this.team2Score,
+                team1Name: this.team1Name,
+                team2Name: this.team2Name,
+                currentTeam: this.currentTeam,
+                revealedAnswers: this.revealedAnswers,
+                currentQuestionIndex: this.currentQuestionIndex,
+                config: this.config,
+                questions: this.questions
+            };
+            
+            this.socket.emit('updateGameState', gameState);
+        }
+    }
+    
+    broadcastAnswerReveal(answerIndex, answerData) {
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            this.socket.emit('revealAnswer', {
+                index: answerIndex,
+                text: answerData.text,
+                points: answerData.points
+            });
+        }
+    }
+    
+    broadcastScoreUpdate() {
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            this.socket.emit('updateScore', {
+                team1Score: this.team1Score,
+                team2Score: this.team2Score,
+                currentTeam: this.currentTeam
+            });
+        }
+    }
+    
+    broadcastRoundChange() {
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            this.socket.emit('changeRound', {
+                currentRound: this.currentRound,
+                currentQuestionIndex: this.currentQuestionIndex
+            });
+        }
+    }
+    
+    broadcastUndoAction(lastState) {
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            // Send complete game state including which answers should be revealed
+            const revealedAnswerData = [];
+            if (lastState.revealedCards) {
+                lastState.revealedCards.forEach(revealedCard => {
+                    revealedAnswerData.push({
+                        index: revealedCard.index,
+                        text: revealedCard.text,
+                        points: revealedCard.points
+                    });
+                });
+            }
+            
+            this.socket.emit('undoAction', {
+                gameState: {
+                    currentRound: this.currentRound,
+                    team1Score: this.team1Score,
+                    team2Score: this.team2Score,
+                    team1Name: this.team1Name,
+                    team2Name: this.team2Name,
+                    currentTeam: this.currentTeam,
+                    revealedAnswers: this.revealedAnswers,
+                    currentQuestionIndex: this.currentQuestionIndex
+                },
+                revealedAnswers: revealedAnswerData
+            });
+        }
     }
 }
 
