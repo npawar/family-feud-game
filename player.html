@@ -363,7 +363,7 @@
                         <div class="answer-number">${index + 1}</div>
                         <div class="answer-content">
                             <div class="answer-text hidden">?</div>
-                            <div class="answer-points hidden">?</div>
+                            <div class="answer-points">${answer.points}</div>
                         </div>
                     `;
                     grid.appendChild(answerCard);
@@ -395,14 +395,21 @@
                 
                 // Reset all answer cards to unrevealed state
                 const answerCards = document.querySelectorAll('.answer-card');
-                answerCards.forEach((card) => {
+                const answers = (this.gameState.questions && this.gameState.questions[this.gameState.currentRound])
+                    ? this.gameState.questions[this.gameState.currentRound].answers
+                    : [];
+                
+                answerCards.forEach((card, idx) => {
                     const textEl = card.querySelector('.answer-text');
                     const pointsEl = card.querySelector('.answer-points');
+                    const points = answers[idx] ? answers[idx].points : '';
                     
                     textEl.textContent = '?';
-                    pointsEl.textContent = '?';
                     textEl.classList.add('hidden');
-                    pointsEl.classList.add('hidden');
+                    
+                    pointsEl.textContent = points;
+                    pointsEl.classList.remove('hidden');
+                    
                     card.classList.remove('revealed');
                 });
                 
