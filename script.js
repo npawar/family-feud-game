@@ -340,6 +340,9 @@ class BabyShowerFamilyFeud {
     switchTeam() {
         this.currentTeam = this.currentTeam === 1 ? 2 : 1;
         this.updateTeamIndicator();
+        
+        // Broadcast team switch to players
+        this.broadcastTeamSwitch();
     }
     
     updateTeamIndicator() {
@@ -871,6 +874,16 @@ class BabyShowerFamilyFeud {
             };
             
             this.socket.emit('gameEnd', gameResults);
+        }
+    }
+    
+    broadcastTeamSwitch() {
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            this.socket.emit('teamSwitch', {
+                currentTeam: this.currentTeam,
+                team1Name: this.team1Name,
+                team2Name: this.team2Name
+            });
         }
     }
 }

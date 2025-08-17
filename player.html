@@ -269,6 +269,11 @@
                 this.socket.on('gameEnded', (gameResults) => {
                     this.showGameResults(gameResults);
                 });
+                
+                this.socket.on('teamSwitched', (teamData) => {
+                    this.gameState.currentTeam = teamData.currentTeam;
+                    this.updateCurrentTeam();
+                });
             }
             
             bindEvents() {

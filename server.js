@@ -276,6 +276,22 @@ io.on('connection', (socket) => {
     socket.to(socket.gameCode).emit('gameEnded', gameResults);
   });
 
+  // Admin switches team
+  socket.on('teamSwitch', (teamData) => {
+    if (!socket.isAdmin || !socket.gameCode) {
+      return;
+    }
+
+    // Update session state
+    const updates = {
+      currentTeam: teamData.currentTeam
+    };
+    gameManager.updateGameState(socket.gameCode, updates);
+
+    // Broadcast team switch to all players
+    socket.to(socket.gameCode).emit('teamSwitched', teamData);
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
