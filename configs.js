@@ -141,5 +141,77 @@ window.GameConfigs = {
                 ]
             }
         ]
+    },
+    
+    'aabha': {
+        title: "Aabha's Baby Sprinkle",
+        teamNames: { default1: "Team Pink", default2: "Team Blue" },
+        questions: [
+            {
+                question: "What things do you find in a diaper bag?",
+                answers: [
+                    { text: "Diapers", points: 25 },
+                    { text: "Wipes", points: 22 },
+                    { text: "Milk Bottle", points: 18 },
+                    { text: "Changing Pad", points: 15 },
+                    { text: "Extra Clothes", points: 12 },
+                    { text: "Cream", points: 10 },
+                    { text: "Toys", points: 8 },
+                    { text: "Sanitizer", points: 6 }
+                ]
+            },
+            {
+                question: "What are things babies love to grab?",
+                answers: [
+                    { text: "Hair", points: 24 },
+                    { text: "Specs", points: 20 },
+                    { text: "Face", points: 18 },
+                    { text: "Clothing", points: 15 },
+                    { text: "Pets", points: 12 },
+                    { text: "Plants", points: 10 },
+                    { text: "Fingers", points: 8 },
+                    { text: "Jewellery", points: 6 }
+                ]
+            },
+            {
+                question: "What helps calm a fussy baby?",
+                answers: [
+                    { text: "Singing/Music", points: 26 },
+                    { text: "Milk/Feeding", points: 22 },
+                    { text: "Walk", points: 18 },
+                    { text: "Car Ride", points: 15 },
+                    { text: "Time", points: 12 },
+                    { text: "Rocking", points: 10 },
+                    { text: "Mommy", points: 8 },
+                    { text: "Sibling", points: 6 }
+                ]
+            },
+            {
+                question: "What piles up with a new baby in the house?",
+                answers: [
+                    { text: "Toys", points: 24 },
+                    { text: "Diapers", points: 20 },
+                    { text: "Dishes", points: 18 },
+                    { text: "Books", points: 15 },
+                    { text: "Laundry", points: 12 },
+                    { text: "Bibs and Burp Cloths", points: 10 },
+                    { text: "Chores", points: 8 },
+                    { text: "Sippy Cups", points: 6 }
+                ]
+            },
+            {
+                question: "What are some common nicknames for your baby?",
+                answers: [
+                    { text: "Chotu", points: 25 },
+                    { text: "Bittu", points: 20 },
+                    { text: "Gattu", points: 18 },
+                    { text: "Buddy", points: 15 },
+                    { text: "Tillu", points: 12 },
+                    { text: "Arhamooli", points: 10 },
+                    { text: "Bubbi", points: 8 },
+                    { text: "Dhampi", points: 6 }
+                ]
+            }
+        ]
     }
 };

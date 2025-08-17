@@ -178,6 +178,31 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Player Results Screen -->
+        <div id="player-results-screen" class="screen" style="display: none;">
+            <div class="player-join">
+                <h1>🎉 Game Over! 🎉</h1>
+                <div class="final-scores">
+                    <div class="winner-announcement" id="player-winner-announcement">
+                        <!-- Winner will be announced here -->
+                    </div>
+                    <div class="final-score-display">
+                        <div class="final-team-score">
+                            <h3 id="player-final-team1">Team Forest</h3>
+                            <span id="player-final-team1-score">0</span>
+                        </div>
+                        <div class="final-team-score">
+                            <h3 id="player-final-team2">Team Meadow</h3>
+                            <span id="player-final-team2-score">0</span>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top: 2rem; color: #556B2F; font-style: italic;">
+                    Thank you for playing! 🎈
+                </p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -239,6 +264,10 @@
                 
                 this.socket.on('undoActionReceived', (undoData) => {
                     this.handleUndoAction(undoData);
+                });
+                
+                this.socket.on('gameEnded', (gameResults) => {
+                    this.showGameResults(gameResults);
                 });
             }
             
@@ -433,6 +462,32 @@
                 // Update scores and team indicator
                 this.updateScores();
                 this.updateCurrentTeam();
+            }
+            
+            showGameResults(gameResults) {
+                // Hide all other screens
+                document.getElementById('join-screen').style.display = 'none';
+                document.getElementById('waiting-screen').style.display = 'none';
+                document.getElementById('player-game-screen').style.display = 'none';
+                
+                // Show results screen
+                document.getElementById('player-results-screen').style.display = 'block';
+                
+                // Update team names and scores
+                document.getElementById('player-final-team1').textContent = gameResults.team1Name;
+                document.getElementById('player-final-team2').textContent = gameResults.team2Name;
+                document.getElementById('player-final-team1-score').textContent = gameResults.team1Score;
+                document.getElementById('player-final-team2-score').textContent = gameResults.team2Score;
+                
+                // Show winner announcement
+                const winnerAnnouncement = document.getElementById('player-winner-announcement');
+                if (gameResults.team1Score > gameResults.team2Score) {
+                    winnerAnnouncement.textContent = `🎉 ${gameResults.team1Name} Wins! 🎉`;
+                } else if (gameResults.team2Score > gameResults.team1Score) {
+                    winnerAnnouncement.textContent = `🎉 ${gameResults.team2Name} Wins! 🎉`;
+                } else {
+                    winnerAnnouncement.textContent = "🤝 It's a Tie! 🤝";
+                }
             }
         }
         

@@ -266,6 +266,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Admin ends game
+  socket.on('gameEnd', (gameResults) => {
+    if (!socket.isAdmin || !socket.gameCode) {
+      return;
+    }
+
+    // Broadcast game end to all players
+    socket.to(socket.gameCode).emit('gameEnded', gameResults);
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);

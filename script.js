@@ -478,6 +478,9 @@ class BabyShowerFamilyFeud {
     endGame() {
         this.showResultsScreen();
         this.displayFinalResults();
+        
+        // Broadcast game end to players
+        this.broadcastGameEnd();
     }
     
     displayFinalResults() {
@@ -855,6 +858,19 @@ class BabyShowerFamilyFeud {
                 },
                 revealedAnswers: revealedAnswerData
             });
+        }
+    }
+    
+    broadcastGameEnd() {
+        if (this.isMultiplayer && this.isHost && this.socket) {
+            const gameResults = {
+                team1Name: this.team1Name,
+                team2Name: this.team2Name,
+                team1Score: this.team1Score,
+                team2Score: this.team2Score
+            };
+            
+            this.socket.emit('gameEnd', gameResults);
         }
     }
 }
